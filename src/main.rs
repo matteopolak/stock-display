@@ -1,3 +1,5 @@
+use reqwest::Client;
+
 mod constants;
 mod structs;
 mod utils;
@@ -5,14 +7,24 @@ mod utils;
 #[tokio::main]
 async fn main() -> () {
 	// get the stock ticker from the user
-	let ticker = utils::get_stock_ticker();
+	// of 5 bytes, which is the maximum length of a ticker
+	let ticker: String = utils::get_input_string("      stock ticker: ", 5);
 
 	// initialize the last price to be 0
 	let mut last_price: f64 = 0.0;
-	let mut first = true;
+	let mut first: bool = true;
+
+	// create a new http client from which to dispatch requests
+	let client: Client = Client::builder()
+		.min_tls_version(reqwest::tls::Version::TLS_1_2)
+		.build()
+		.unwrap();
+
+	// build the URI from the ticker name
+	let uri: String = constants::NASDAQ_API_ENDPOINT.replace("{ticker}", &ticker);
 
 	loop {
-		let price: f64 = match utils::get_stock_price(&ticker).await {
+		let price: f64 = match utils::get_stock_price(&uri, &client).await {
 			Some(p) => p,
 			None => break,
 		};
