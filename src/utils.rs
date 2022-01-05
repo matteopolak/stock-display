@@ -1,4 +1,4 @@
-use reqwest::{Client, header};
+use reqwest::{header, Client};
 use std::io::{self, Write};
 
 use crate::constants;
@@ -12,7 +12,7 @@ pub fn get_stock_ticker() -> String {
 	print!("      stock ticker: ");
 	io::stdout().flush().ok();
 
-	// read from stdin into `ticker`, panicking if it cannot be reached 
+	// read from stdin into `ticker`, panicking if it cannot be reached
 	io::stdin()
 		.read_line(&mut ticker)
 		.expect("Could not read from stdin");
@@ -32,9 +32,19 @@ pub fn get_stock_ticker() -> String {
 // prints out the price changes to the console
 // TODO: add a nice chart
 pub fn pretty_print_data(current_price: f64, last_price: f64) -> () {
-	let number_prefix: char = if current_price >= last_price { '+' } else { '-' };
+	let number_prefix: char = if current_price >= last_price {
+		'+'
+	} else {
+		'-'
+	};
 
-	print!("      current price: ${} | last price: ${} | change: {}${}\r", current_price, last_price, number_prefix, (current_price - last_price).abs());
+	print!(
+		"      current price: ${} | last price: ${} | change: {}${}\r",
+		current_price,
+		last_price,
+		number_prefix,
+		(current_price - last_price).abs()
+	);
 	io::stdout().flush().ok();
 }
 
@@ -60,7 +70,8 @@ pub async fn get_stock_price(ticker: &str) -> Option<f64> {
 		.header(header::ACCEPT_LANGUAGE, "en-US;q=0.9")
 		.header(header::ACCEPT_ENCODING, "text")
 		.header(header::USER_AGENT, constants::USER_AGENT_HEADER)
-		.send().await;
+		.send()
+		.await;
 
 	if let Ok(response) = request {
 		let json = response.json::<structs::NasdaqDataWrap>().await.unwrap();
@@ -68,7 +79,7 @@ pub async fn get_stock_price(ticker: &str) -> Option<f64> {
 
 		// remove the leading `$` of the string
 		raw.remove(0);
-		
+
 		// parse the string into a 64-bit float
 		let price = raw.parse::<f64>().unwrap();
 

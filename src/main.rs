@@ -1,6 +1,6 @@
 mod constants;
-mod utils;
 mod structs;
+mod utils;
 
 #[tokio::main]
 async fn main() -> () {
@@ -14,7 +14,7 @@ async fn main() -> () {
 	loop {
 		let price: f64 = match utils::get_stock_price(&ticker).await {
 			Some(p) => p,
-			None => break
+			None => break,
 		};
 
 		if first {

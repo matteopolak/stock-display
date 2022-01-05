@@ -9,3 +9,15 @@ edition = "2021"
 serde = { version = "1.0.133", features = ["derive"] }
 tokio = { version = "1.15.0", features = ["full"] }
 reqwest = { version = "0.11.8", features = ["json"] }
+
+[profile.dev]
+opt-level = 0
+overflow-checks = false
+debug = true
+
+[profile.release]
+overflow-checks = true
+opt-level = 3
+debug = false
+lto = "fat"
+codegen-units = 1
