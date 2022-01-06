@@ -1,5 +1,3 @@
-#![feature(toowned_clone_into)]
-
 use reqwest::Client;
 use std::collections::VecDeque;
 
@@ -19,7 +17,7 @@ async fn main() -> () {
 
 	// get the stock ticker from the user
 	// of 5 bytes, which is the maximum length of a ticker
-	let ticker: String = utils::get_input_string("      stock ticker: ", 5);
+	let ticker: String = utils::get_input_string("      stock ticker: ", 5).to_uppercase();
 
 	// create a new http client from which to dispatch requests
 	let client: Client = Client::builder()
@@ -65,8 +63,8 @@ async fn main() -> () {
 		// add the next point to the end of the vector
 		points.push_back((i as f64, price));
 
-		// clear the screen
-		terminal.clear_screen().unwrap();
+		// move cursor to top left
+		terminal.move_cursor_to(0, 0).unwrap();
 
 		// print out the price
 		utils::pretty_print_data(
