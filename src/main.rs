@@ -1,5 +1,3 @@
-#![feature(iter_advance_by)]
-
 use reqwest::Client;
 use std::collections::VecDeque;
 
