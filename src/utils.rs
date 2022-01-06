@@ -83,7 +83,7 @@ pub fn pretty_print_data(
 
 	// print out some metrics
 	println!(
-		"{} | price: ${:.2} | last: ${:.2} | average: ${:.2} | change: {} | mtd: {} | qtd: {} | ytd: {}",
+		"   {} | price: ${:.2} | last: ${:.2} | average: ${:.2} | change: {} | mtd: {} | qtd: {} | ytd: {}",
 		ticker,
 		current_price,
 		last_price,
@@ -124,7 +124,7 @@ pub fn get_terminal_size() -> (u32, u32) {
 	// get the width and height of the terminal
 	let Size { cols: x, rows: y } = termsize::get().unwrap();
 
-	(x as u32 / 2, y as u32 / 2)
+	(x as u32 - 10, y as u32 - 2)
 }
 
 pub async fn get_stock_price(uri: &str, client: &Client) -> Option<f64> {
