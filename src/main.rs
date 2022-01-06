@@ -9,15 +9,15 @@ mod utils;
 async fn main() -> () {
 	let terminal = console::Term::stdout();
 
-	// hide the cursor
-	terminal.hide_cursor().unwrap();
+	// get the stock ticker from the user
+	// of 5 bytes, which is the maximum length of a ticker
+	let ticker: String = utils::get_input_string("      stock ticker: ", 5).to_uppercase();
 
 	// clear the terminal
 	terminal.clear_screen().unwrap();
 
-	// get the stock ticker from the user
-	// of 5 bytes, which is the maximum length of a ticker
-	let ticker: String = utils::get_input_string("      stock ticker: ", 5).to_uppercase();
+	// hide the cursor
+	terminal.hide_cursor().unwrap();
 
 	// create a new http client from which to dispatch requests
 	let client: Client = Client::builder()
