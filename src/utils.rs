@@ -70,7 +70,7 @@ pub fn pretty_print_data(
 
 	// print the plot to the console
 	println!(
-		"\n{}",
+		"{}",
 		Page::single(&view)
 			.dimensions(width, height)
 			.to_text()
@@ -91,12 +91,15 @@ pub fn pretty_print_data(
 	);
 }
 
+// utility for printing the difference between two numbers,
+// explicitly putting a `+` when it's greater
 pub fn diff_with_sign(old: f64, new: f64) -> String {
 	let diff = old - new;
 
 	format!("{}${:.2}", if diff >= 0. { '+' } else { '-' }, diff.abs())
 }
 
+// utility for printing the percentage change between two numbers
 pub fn diff_with_sign_percent(old: f64, new: f64) -> String {
 	let diff = new - old;
 
@@ -166,35 +169,51 @@ pub async fn get_stock_price(uri: &str, client: &Client) -> Option<f64> {
 	None
 }
 
+// get the stock price history for a ticker
 pub async fn get_ticker_history(ticker: &str, client: &Client) -> Option<(f64, f64, f64)> {
+	// get the current year
 	let year = get_current_year();
+
+	// construct the uri
 	let uri = constants::MARKETSTACK_API_ENDPOINT
 		.replace("{ticker}", ticker)
 		.replace("{start}", &format!("{}-01-01", year))
 		.replace("{end}", &format!("{}-12-31", year));
 
+	// create an http request to fetch the data
 	let request: Result<Response, Error> = client
 		.get(uri)
 		.send()
 		.await;
 
+	// if it's successful
 	if let Ok(response) = request {
+		// parse the json response into a vector
 		let days = match response.json::<structs::NameStackDataWrap>().await {
 			Ok(j) => j.data,
 			Err(_) => return None,
 		};
 
+		// get the length of the vector
 		let length = days.len();
 
+		// get the last entry in the vector
 		let last = match days.get(length - 1) {
 			Some(d) => d,
 			None => return None
 		};
 
+		// entries are ordered from newest to oldest, so this is
+		// getting the nth day in the past from today, which is useful
+		// for an approximate price for mtd, qtd, and ytd
+		//
+		// note: `unwrap_or` makes `last` a fallback, which is used when
+		// there is not enough history for the stock price
 		let mtd = days.get(29).unwrap_or(last).open;
 		let qtd = days.get(90).unwrap_or(last).open;
 		let ytd = days.get(364).unwrap_or(last).open;
 
+		// return a tuple of the data
 		return Some((mtd, qtd, ytd));
 	}
 

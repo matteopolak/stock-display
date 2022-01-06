@@ -69,8 +69,8 @@ async fn main() -> () {
 		// add the next point to the end of the vector
 		points.push_back((i as f64, price));
 
-		// move cursor to top left
-		terminal.move_cursor_to(0, 0).unwrap();
+		// clear the terminal
+		terminal.clear_screen().unwrap();
 
 		// print out the price
 		utils::pretty_print_data(
