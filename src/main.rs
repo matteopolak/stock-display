@@ -29,6 +29,10 @@ async fn main() -> () {
 	let uri: String = constants::NASDAQ_API_ENDPOINT.replace("{ticker}", &ticker);
 
 	// create a vector to store data for the chart
+	//
+	// note: a VecDeque is similar to a Vec, except that
+	// it uses a ring buffer to efficiently allow popping (removing)
+	// and pushing (adding) to the front *and* back
 	let mut points: VecDeque<(f64, f64)> = VecDeque::new();
 
 	// create a counter
@@ -46,7 +50,7 @@ async fn main() -> () {
 				println!("      invalid stock ticker");
 
 				break;
-			},
+			}
 		};
 
 		let (x, y) = utils::get_terminal_size();

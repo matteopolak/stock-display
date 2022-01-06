@@ -55,10 +55,8 @@ pub fn pretty_print_data(
 	// create a new plot
 	//
 	// note: copying data here is not very efficient, and is
-	// something that could be improved if there was more time
-	// to complete this project. for now, this is faster than
-	// the alternative of using a Vec when storing the points,
-	// so it's the one being used
+	// something that could be improved if this library requests
+	// for a &Vec<(f64, 64)> instead of Vec<(f64, f64)> in the future
 	let plot: Plot = Plot::new(Vec::from_iter(points.clone().into_iter())).point_style(
 		PointStyle::new()
 			.marker(PointMarker::Square)
@@ -119,7 +117,7 @@ pub async fn get_stock_price(uri: &str, client: &Client) -> Option<f64> {
 	if let Ok(response) = request {
 		let json: structs::NasdaqDataWrap = match response.json::<structs::NasdaqDataWrap>().await {
 			Ok(j) => j,
-			Err(_) => return None
+			Err(_) => return None,
 		};
 
 		// remove the first character from the string
@@ -130,7 +128,13 @@ pub async fn get_stock_price(uri: &str, client: &Client) -> Option<f64> {
 		// skipping the first byte (first character in this case, as
 		// stock tickers can only use letters of the alphabet), and collecting
 		// it into a vector
-		let raw: Vec<u8> = json.data.primaryData.lastSalePrice
+		//
+		// also note: a String in Rust is simply a wrapper around Vec<u8>, so
+		// this conversion is costless
+		let raw: Vec<u8> = json
+			.data
+			.primaryData
+			.lastSalePrice
 			.into_bytes()
 			.into_iter()
 			.skip(1)
@@ -138,10 +142,7 @@ pub async fn get_stock_price(uri: &str, client: &Client) -> Option<f64> {
 
 		// parse the vec into a string, then into a
 		// 64-bit float
-		let price: f64 = str::from_utf8(&raw)
-			.unwrap()
-			.parse::<f64>()
-			.unwrap();
+		let price: f64 = str::from_utf8(&raw).unwrap().parse::<f64>().unwrap();
 
 		// return the price
 		return Some(price);
