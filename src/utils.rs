@@ -8,6 +8,7 @@ use std::io::{self, Write};
 use std::str;
 use std::time::{Duration, SystemTime};
 use termsize::{self, Size};
+use colored::{Colorize, ColoredString};
 
 use crate::constants;
 use crate::structs;
@@ -83,36 +84,68 @@ pub fn pretty_print_data(
 
 	// print out some metrics
 	println!(
-		"   {} | price: ${:.2} | last: ${:.2} | average: ${:.2} | change: {} | mtd: {} | qtd: {} | ytd: {}",
-		ticker,
-		current_price,
-		last_price,
-		average_price,
+		"   {} | price: {} | last: {} | average: {} | change: {} | mtd: {} | qtd: {} | ytd: {}",
+		ticker.cyan(),
+		round_and_whiten(current_price),
+		round_and_whiten(last_price),
+		diff_without_sign(current_price, average_price),
 		diff_with_sign(last_price, current_price),
 		diff_with_sign_percent(mtd, current_price),
 		diff_with_sign_percent(qtd, current_price),
-		diff_with_sign_percent(ytd, current_price)
+		diff_with_sign_percent(ytd, current_price),
 	);
+}
+
+pub fn round_and_whiten(num: f64) -> ColoredString {
+	format!("${}", ((num * 100.).round() / 100.)).white()
 }
 
 // utility for printing the difference between two numbers,
 // explicitly putting a `+` when it's greater
-pub fn diff_with_sign(old: f64, new: f64) -> String {
+pub fn diff_with_sign(old: f64, new: f64) -> ColoredString {
 	let diff = old - new;
+	let greater = diff >= 0.;
 
-	format!("{}${:.2}", if diff >= 0. { '+' } else { '-' }, diff.abs())
+	let string = format!("{}${:.2}", if greater { '+' } else { '-' }, diff.abs());
+
+	if greater {
+		string.green()
+	} else {
+		string.red()
+	}
+}
+
+// utility for printing the difference between two numbers,
+// explicitly putting a `+` when it's greater
+pub fn diff_without_sign(old: f64, new: f64) -> ColoredString {
+	let diff = old - new;
+	let greater = diff >= 0.;
+
+	let string = format!("${}", ((diff.abs() * 100.).round() / 100.));
+	
+	if greater {
+		string.green()
+	} else {
+		string.red()
+	}
 }
 
 // utility for printing the percentage change between two numbers
-pub fn diff_with_sign_percent(old: f64, new: f64) -> String {
+pub fn diff_with_sign_percent(old: f64, new: f64) -> ColoredString {
 	let diff = new - old;
 
 	// `:+.2` = round to 2 decimals, and include the `+`
 	// character if it's positive
-	format!(
+	let string = format!(
 		"{:+.2}%",
 		(diff / old * 100.).abs()
-	)
+	);
+
+	if diff >= 0. {
+		string.green()
+	} else {
+		string.red()
+	}
 }
 
 // returns a Future that resolves after `s` seconds
