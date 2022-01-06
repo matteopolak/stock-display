@@ -5,6 +5,7 @@ use plotlib::view::ContinuousView;
 use reqwest::{header, Client, Error, Response};
 use std::collections::VecDeque;
 use std::io::{self, Write};
+use std::str;
 use termsize::{self, Size};
 
 use crate::constants;
@@ -15,7 +16,12 @@ pub fn get_input_string(phrase: &str, input_length: usize) -> String {
 	// create a string with a capacity of `input_length` bytes
 	let mut input: String = String::with_capacity(input_length);
 
+	// print out the phrase
 	print!("{}", phrase);
+
+	// important: flush the stdout buffer manually
+	// or it will not print anything until a new-line character
+	// is reached
 	io::stdout().flush().ok();
 
 	// read from stdin into `input`, panicking if it cannot be reached
@@ -116,13 +122,26 @@ pub async fn get_stock_price(uri: &str, client: &Client) -> Option<f64> {
 			Err(_) => return None
 		};
 
-		let mut raw: String = json.data.primaryData.lastSalePrice;
+		// remove the first character from the string
+		//
+		// note: you can simply use `String#remove` to remove
+		// the first character, but it copies the rest of the string.
+		// with this method, I'm converting the string to an iterator,
+		// skipping the first byte (first character in this case, as
+		// stock tickers can only use letters of the alphabet), and collecting
+		// it into a vector
+		let raw: Vec<u8> = json.data.primaryData.lastSalePrice
+			.into_bytes()
+			.into_iter()
+			.skip(1)
+			.collect::<Vec<u8>>();
 
-		// remove the leading `$` of the string
-		raw.remove(0);
-
-		// parse the string into a 64-bit float
-		let price: f64 = raw.parse::<f64>().unwrap();
+		// parse the vec into a string, then into a
+		// 64-bit float
+		let price: f64 = str::from_utf8(&raw)
+			.unwrap()
+			.parse::<f64>()
+			.unwrap();
 
 		// return the price
 		return Some(price);

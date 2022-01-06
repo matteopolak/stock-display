@@ -82,6 +82,13 @@ async fn main() -> () {
 		);
 
 		// increase the counter by 1
+		// note: Rust does not support pre- or
+		// post-incrementing to avoid a lot of undefined
+		// behaviour (like with C/C++), so this is the
+		// only other way to increment
+		//
+		// fun fact: `n = ++i + i;` is still undefined
+		// behaviour in C and C++
 		i += 1;
 
 		// wait 60 seconds (NASDAQ real-time API updates every minute)
