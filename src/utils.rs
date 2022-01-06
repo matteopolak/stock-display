@@ -75,7 +75,8 @@ pub fn pretty_print_data(
 	);
 
 	println!(
-		"price: ${:.2} | last: ${:.2} | average: ${:.2} | change: {}${:.2}",
+		"{} | price: ${:.2} | last: ${:.2} | average: ${:.2} | change: {}${:.2}",
+		ticker,
 		current_price,
 		last_price,
 		average_price,
