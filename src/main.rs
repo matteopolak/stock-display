@@ -81,6 +81,7 @@ async fn main() -> () {
 			total_price / i as f64,
 			x as u32,
 			y as u32,
+			i,
 			history,
 		);
 
@@ -95,7 +96,7 @@ async fn main() -> () {
 		i += 1;
 
 		// wait 60 seconds (NASDAQ real-time API updates every minute)
-		utils::sleep(60).await;
+		utils::sleep(5).await;
 	}
 
 	// this is only reached when the loop is broken out of,

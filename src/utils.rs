@@ -52,6 +52,7 @@ pub fn pretty_print_data(
 	average_price: f64,
 	width: u32,
 	height: u32,
+	index: u32,
 	(mtd, qtd, ytd): (f64, f64, f64)
 ) -> () {
 	// create a new plot
@@ -66,7 +67,9 @@ pub fn pretty_print_data(
 	);
 
 	// create a new plot viewer
-	let view: ContinuousView = ContinuousView::new().add(plot);
+	let view: ContinuousView = ContinuousView::new()
+		.add(plot)
+		.x_range((if index <= width { 0 } else { index - width }) as f64, width as f64);
 
 	// print the plot to the console
 	println!(
@@ -228,5 +231,5 @@ pub fn get_current_year() -> u64 {
 	// divide the number of seconds since January 1, 1970
 	// by the number of seconds in a year to get the number
 	// of years elapsed since 1970
-	1970 - 1 + now.as_secs() / 31536000
+	1970 + now.as_secs() / 31536000
 }
