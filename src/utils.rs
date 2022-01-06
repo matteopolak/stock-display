@@ -7,6 +7,7 @@ use std::collections::VecDeque;
 use std::io::{self, Write};
 use std::str;
 use termsize::{self, Size};
+use std::time::{Duration, SystemTime};
 
 use crate::constants;
 use crate::structs;
@@ -51,6 +52,7 @@ pub fn pretty_print_data(
 	average_price: f64,
 	width: u32,
 	height: u32,
+	(mtd, qtd, ytd): (f64, f64, f64)
 ) -> () {
 	// create a new plot
 	//
@@ -66,9 +68,6 @@ pub fn pretty_print_data(
 	// create a new plot viewer
 	let view: ContinuousView = ContinuousView::new().add(plot);
 
-	// calculate the price change
-	let price_change: f64 = last_price - current_price;
-
 	// print the plot to the console
 	println!(
 		"\n{}",
@@ -78,15 +77,30 @@ pub fn pretty_print_data(
 			.unwrap()
 	);
 
+	// print out some metrics
 	println!(
-		"{} | price: ${:.2} | last: ${:.2} | average: ${:.2} | change: {}${:.2}",
+		"{} | price: ${:.2} | last: ${:.2} | average: ${:.2} | change: {} | mtd: {} | qtd: {} | ytd: {}",
 		ticker,
 		current_price,
 		last_price,
 		average_price,
-		if price_change >= 0. { '+' } else { '-' },
-		price_change.abs()
+		diff_with_sign(last_price, current_price),
+		diff_with_sign_percent(mtd, current_price),
+		diff_with_sign_percent(qtd, current_price),
+		diff_with_sign_percent(ytd, current_price)
 	);
+}
+
+pub fn diff_with_sign(old: f64, new: f64) -> String {
+	let diff = old - new;
+
+	format!("{}${:.2}", if diff >= 0. { '+' } else { '-' }, diff.abs())
+}
+
+pub fn diff_with_sign_percent(old: f64, new: f64) -> String {
+	let diff = new - old;
+
+	format!("{}{:.2}%", if diff >= 0. { '+' } else { '-' }, (diff / old * 100.).abs())
 }
 
 // returns a Future that resolves after `s` seconds
@@ -150,4 +164,50 @@ pub async fn get_stock_price(uri: &str, client: &Client) -> Option<f64> {
 
 	// return nothing
 	None
+}
+
+pub async fn get_ticker_history(ticker: &str, client: &Client) -> Option<(f64, f64, f64)> {
+	let year = get_current_year();
+	let uri = constants::MARKETSTACK_API_ENDPOINT
+		.replace("{ticker}", ticker)
+		.replace("{start}", &format!("{}-01-01", year))
+		.replace("{end}", &format!("{}-12-31", year));
+
+	let request: Result<Response, Error> = client
+		.get(uri)
+		.send()
+		.await;
+
+	if let Ok(response) = request {
+		let days = match response.json::<structs::NameStackDataWrap>().await {
+			Ok(j) => j.data,
+			Err(_) => return None,
+		};
+
+		let length = days.len();
+
+		let last = match days.get(length - 1) {
+			Some(d) => d,
+			None => return None
+		};
+
+		let mtd = days.get(29).unwrap_or(last).open;
+		let qtd = days.get(90).unwrap_or(last).open;
+		let ytd = days.get(364).unwrap_or(last).open;
+
+		return Some((mtd, qtd, ytd));
+	}
+
+	None
+}
+
+pub fn get_current_year() -> u64 {
+	let now: Duration = SystemTime::now()
+		.duration_since(SystemTime::UNIX_EPOCH)
+		.expect("We must be in Back to the Future 4, where they go to the past...");
+
+	// divide the number of seconds since January 1, 1970
+	// by the number of seconds in a year to get the number
+	// of years elapsed since 1970
+	1970 - 1 + now.as_secs() / 31536000
 }

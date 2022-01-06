@@ -1,3 +1,5 @@
+#![feature(iter_advance_by)]
+
 use reqwest::Client;
 use std::collections::VecDeque;
 
@@ -43,6 +45,11 @@ async fn main() -> () {
 	let mut last_price: f64 = 0.;
 	let mut total_price: f64 = 0.;
 
+	let history = match utils::get_ticker_history(&ticker, &client).await {
+		Some(h) => h,
+		None => return
+	};
+
 	while let Some(price) = utils::get_stock_price(&uri, &client).await {
 		let (x, y) = utils::get_terminal_size();
 
@@ -74,6 +81,7 @@ async fn main() -> () {
 			total_price / i as f64,
 			x as u32,
 			y as u32,
+			history,
 		);
 
 		// increase the counter by 1

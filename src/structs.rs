@@ -17,3 +17,15 @@ pub struct NasdaqData {
 pub struct NasdaqPrimaryData {
 	pub lastSalePrice: String,
 }
+
+#[allow(non_snake_case)]
+#[derive(Deserialize)]
+pub struct NameStackDataWrap {
+	pub data: Vec<NameStackData>
+}
+
+#[allow(non_snake_case)]
+#[derive(Deserialize, Clone)]
+pub struct NameStackData {
+	pub open: f64
+}
