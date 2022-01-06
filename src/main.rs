@@ -43,16 +43,7 @@ async fn main() -> () {
 	let mut last_price: f64 = 0.;
 	let mut total_price: f64 = 0.;
 
-	loop {
-		let price: f64 = match utils::get_stock_price(&uri, &client).await {
-			Some(p) => p,
-			None => {
-				println!("      invalid stock ticker");
-
-				break;
-			}
-		};
-
+	while let Some(price) = utils::get_stock_price(&uri, &client).await {
 		let (x, y) = utils::get_terminal_size();
 
 		total_price += price;
@@ -98,4 +89,8 @@ async fn main() -> () {
 		// wait 60 seconds (NASDAQ real-time API updates every minute)
 		utils::sleep(60).await;
 	}
+
+	// this is only reached when the loop is broken out of,
+	// which only happens when the stock price can not be fetched
+	println!("      invalid stock ticker");
 }
