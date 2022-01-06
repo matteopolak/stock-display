@@ -107,9 +107,10 @@ pub fn diff_with_sign(old: f64, new: f64) -> String {
 pub fn diff_with_sign_percent(old: f64, new: f64) -> String {
 	let diff = new - old;
 
+	// `:+.2` = round to 2 decimals, and include the `+`
+	// character if it's positive
 	format!(
-		"{}{:.2}%",
-		if diff >= 0. { '+' } else { '-' },
+		"{:+.2}%",
 		(diff / old * 100.).abs()
 	)
 }
