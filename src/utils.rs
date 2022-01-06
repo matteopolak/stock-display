@@ -96,6 +96,7 @@ pub fn pretty_print_data(
 	);
 }
 
+// round to two decimal places and make the text white
 pub fn round_and_whiten(num: f64) -> ColoredString {
 	format!("${}", ((num * 100.).round() / 100.)).white()
 }
