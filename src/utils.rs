@@ -1,5 +1,11 @@
-use reqwest::{header, Client, Response, Error};
+use plotlib::page::Page;
+use plotlib::repr::Plot;
+use plotlib::style::{PointMarker, PointStyle};
+use plotlib::view::ContinuousView;
+use reqwest::{header, Client, Error, Response};
+use std::collections::VecDeque;
 use std::io::{self, Write};
+use termsize::{self, Size};
 
 use crate::constants;
 use crate::structs;
@@ -31,23 +37,51 @@ pub fn get_input_string(phrase: &str, input_length: usize) -> String {
 }
 
 // prints out the price changes to the console
-// TODO: add a nice chart
-pub fn pretty_print_data(current_price: f64, last_price: f64) -> () {
-	let number_prefix: char = if current_price >= last_price {
-		'+'
-	} else {
-		'-'
-	};
-
-	print!(
-		"      current price: ${} | last price: ${} | change: {}${}\r",
-		current_price,
-		last_price,
-		number_prefix,
-		(current_price - last_price).abs()
+pub fn pretty_print_data(
+	ticker: &str,
+	points: &VecDeque<(f64, f64)>,
+	current_price: f64,
+	last_price: f64,
+	average_price: f64,
+	width: u32,
+	height: u32,
+) -> () {
+	// create a new plot
+	//
+	// note: copying data here is not very efficient, and is
+	// something that could be improved if there was more time
+	// to complete this project. for now, this is faster than
+	// the alternative of using a Vec when storing the points,
+	// so it's the one being used
+	let plot: Plot = Plot::new(Vec::from_iter(points.clone().into_iter())).point_style(
+		PointStyle::new()
+			.marker(PointMarker::Square)
+			.colour("#DD3355"),
 	);
 
-	io::stdout().flush().ok();
+	// create a new plot viewer
+	let view: ContinuousView = ContinuousView::new().add(plot);
+
+	// calculate the price change
+	let price_change: f64 = last_price - current_price;
+
+	// print the plot to the console
+	println!(
+		"\n{}",
+		Page::single(&view)
+			.dimensions(width, height)
+			.to_text()
+			.unwrap()
+	);
+
+	println!(
+		"price: ${:.2} | last: ${:.2} | average: ${:.2} | change: {}${:.2}",
+		current_price,
+		last_price,
+		average_price,
+		if price_change >= 0. { '+' } else { '-' },
+		price_change.abs()
+	);
 }
 
 // returns a Future that resolves after `s` seconds
@@ -55,10 +89,18 @@ pub fn sleep(s: u64) -> tokio::time::Sleep {
 	tokio::time::sleep(tokio::time::Duration::from_secs(s))
 }
 
+pub fn get_terminal_size() -> (u32, u32) {
+	// get the width and height of the terminal
+	let Size { cols: x, rows: y } = termsize::get().unwrap();
+
+	(x as u32 / 2, y as u32 / 2)
+}
+
 pub async fn get_stock_price(uri: &str, client: &Client) -> Option<f64> {
 	// send the request to receive ticker price data
-	// note:	these headers are required to avoid NASDAQ
-	// 				rejecting our request
+	//
+	// note: these headers are required to avoid NASDAQ
+	// rejecting our request
 	let request: Result<Response, Error> = client
 		.get(uri)
 		.header(header::ACCEPT_LANGUAGE, "en-US;q=0.9")
@@ -68,7 +110,8 @@ pub async fn get_stock_price(uri: &str, client: &Client) -> Option<f64> {
 		.await;
 
 	if let Ok(response) = request {
-		let json: structs::NasdaqDataWrap = response.json::<structs::NasdaqDataWrap>().await.unwrap();
+		let json: structs::NasdaqDataWrap =
+			response.json::<structs::NasdaqDataWrap>().await.unwrap();
 		let mut raw: String = json.data.primaryData.lastSalePrice;
 
 		// remove the leading `$` of the string
