@@ -21,11 +21,11 @@ pub struct NasdaqPrimaryData {
 #[allow(non_snake_case)]
 #[derive(Deserialize)]
 pub struct NameStackDataWrap {
-	pub data: Vec<NameStackData>
+	pub data: Vec<NameStackData>,
 }
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Clone)]
 pub struct NameStackData {
-	pub open: f64
+	pub open: f64,
 }

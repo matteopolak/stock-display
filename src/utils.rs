@@ -6,8 +6,8 @@ use reqwest::{header, Client, Error, Response};
 use std::collections::VecDeque;
 use std::io::{self, Write};
 use std::str;
-use termsize::{self, Size};
 use std::time::{Duration, SystemTime};
+use termsize::{self, Size};
 
 use crate::constants;
 use crate::structs;
@@ -53,7 +53,7 @@ pub fn pretty_print_data(
 	width: u32,
 	height: u32,
 	index: u32,
-	(mtd, qtd, ytd): (f64, f64, f64)
+	(mtd, qtd, ytd): (f64, f64, f64),
 ) -> () {
 	// create a new plot
 	//
@@ -62,14 +62,15 @@ pub fn pretty_print_data(
 	// for a &Vec<(f64, 64)> instead of Vec<(f64, f64)> in the future
 	let plot: Plot = Plot::new(Vec::from_iter(points.clone().into_iter())).point_style(
 		PointStyle::new()
-			.marker(PointMarker::Square)
+			.marker(PointMarker::Circle)
 			.colour("#DD3355"),
 	);
 
 	// create a new plot viewer
-	let view: ContinuousView = ContinuousView::new()
-		.add(plot)
-		.x_range((if index <= width { 0 } else { index - width }) as f64, width as f64);
+	let view: ContinuousView = ContinuousView::new().add(plot).x_range(
+		(if index <= width { 0 } else { index - width }) as f64,
+		width as f64,
+	);
 
 	// print the plot to the console
 	println!(
@@ -106,7 +107,11 @@ pub fn diff_with_sign(old: f64, new: f64) -> String {
 pub fn diff_with_sign_percent(old: f64, new: f64) -> String {
 	let diff = new - old;
 
-	format!("{}{:.2}%", if diff >= 0. { '+' } else { '-' }, (diff / old * 100.).abs())
+	format!(
+		"{}{:.2}%",
+		if diff >= 0. { '+' } else { '-' },
+		(diff / old * 100.).abs()
+	)
 }
 
 // returns a Future that resolves after `s` seconds
@@ -184,10 +189,7 @@ pub async fn get_ticker_history(ticker: &str, client: &Client) -> Option<(f64, f
 		.replace("{end}", &format!("{}-12-31", year));
 
 	// create an http request to fetch the data
-	let request: Result<Response, Error> = client
-		.get(uri)
-		.send()
-		.await;
+	let request: Result<Response, Error> = client.get(uri).send().await;
 
 	// if it's successful
 	if let Ok(response) = request {
@@ -203,7 +205,7 @@ pub async fn get_ticker_history(ticker: &str, client: &Client) -> Option<(f64, f
 		// get the last entry in the vector
 		let last = match days.get(length - 1) {
 			Some(d) => d,
-			None => return None
+			None => return None,
 		};
 
 		// entries are ordered from newest to oldest, so this is

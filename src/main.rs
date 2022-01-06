@@ -47,7 +47,7 @@ async fn main() -> () {
 
 	let history = match utils::get_ticker_history(&ticker, &client).await {
 		Some(h) => h,
-		None => return
+		None => return,
 	};
 
 	while let Some(price) = utils::get_stock_price(&uri, &client).await {
