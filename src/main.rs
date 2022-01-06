@@ -42,7 +42,11 @@ async fn main() -> () {
 	loop {
 		let price: f64 = match utils::get_stock_price(&uri, &client).await {
 			Some(p) => p,
-			None => break,
+			None => {
+				println!("      invalid stock ticker");
+
+				break;
+			},
 		};
 
 		let (x, y) = utils::get_terminal_size();

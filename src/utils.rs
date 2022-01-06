@@ -111,8 +111,11 @@ pub async fn get_stock_price(uri: &str, client: &Client) -> Option<f64> {
 		.await;
 
 	if let Ok(response) = request {
-		let json: structs::NasdaqDataWrap =
-			response.json::<structs::NasdaqDataWrap>().await.unwrap();
+		let json: structs::NasdaqDataWrap = match response.json::<structs::NasdaqDataWrap>().await {
+			Ok(j) => j,
+			Err(_) => return None
+		};
+
 		let mut raw: String = json.data.primaryData.lastSalePrice;
 
 		// remove the leading `$` of the string
