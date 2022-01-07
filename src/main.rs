@@ -1,5 +1,6 @@
 #![feature(int_log)]
 
+use colored::Colorize;
 use reqwest::Client;
 use std::collections::VecDeque;
 
@@ -23,16 +24,16 @@ async fn main() -> () {
 	let ticker: String = loop {
 		// get the stock ticker from the user
 		// of 5 bytes, which is the maximum length of a ticker
-		let ticker = utils::get_input_string("      stock ticker: ", 5).to_uppercase();
+		let input_ticker: String = utils::get_input_string(&format!("      {} Stock ticker: ", "…".yellow()), 5).to_uppercase();
 
 		// if the ticker is valid...
-		if utils::is_valid_ticker(&ticker, &client).await {
+		if utils::is_valid_ticker(&input_ticker, &client).await {
 			// break out of the loop with the ticker
-			break ticker;
+			break input_ticker;
 		}
 
 		// if not, say it's invalid and start again
-		println!("      invalid ticker, please try again");
+		println!("      {} The ticker {} is invalid, please try again", "X".red(), &input_ticker.white());
 	};
 
 	// clear the terminal
@@ -115,7 +116,7 @@ async fn main() -> () {
 
 	// this is only reached when the loop is broken out of,
 	// which only happens when the stock price can not be fetched
-	println!("      error fetching ticker data");
+	println!("      {} Error fetching ticker data", "X".red());
 }
 
 #[cfg(test)]
