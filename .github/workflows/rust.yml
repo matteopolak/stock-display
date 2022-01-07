@@ -3,17 +3,25 @@ on: [push]
 name: CI
 
 jobs:
-  build_and_test:
-    name: Rust project
+  build:
+    name: Cargo check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: nightly
       - uses: actions-rs/cargo@v1
         with:
-          command: build
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
+          command: check
+  test:
+      name: Run unit tests
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+        - uses: actions-rs/toolchain@v1
+          with:
+            toolchain: nightly
+        - uses: actions-rs/cargo@v1
+          with:
+            command: test
