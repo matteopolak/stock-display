@@ -104,7 +104,7 @@ pub fn round_and_whiten(num: f64) -> ColoredString {
 // utility for printing the difference between two numbers,
 // explicitly putting a `+` when it's greater
 pub fn diff_with_sign(old: f64, new: f64) -> ColoredString {
-	let diff = old - new;
+	let diff = new - old;
 	let greater = diff >= 0.;
 
 	let string = format!("{}${:.2}", if greater { '+' } else { '-' }, diff.abs());
@@ -116,13 +116,16 @@ pub fn diff_with_sign(old: f64, new: f64) -> ColoredString {
 	}
 }
 
-// utility for printing the difference between two numbers,
-// explicitly putting a `+` when it's greater
+// utility for printing the difference between two numbers
 pub fn diff_without_sign(old: f64, new: f64) -> ColoredString {
-	let diff = old - new;
+	let diff = new - old;
 	let greater = diff >= 0.;
 
-	let string = format!("${}", ((diff.abs() * 100.).round() / 100.));
+	let string = if greater {
+		format!("${:.2}", diff)
+	} else {
+		format!("-${:.2}", diff.abs())
+	};
 	
 	if greater {
 		string.green()
@@ -139,7 +142,7 @@ pub fn diff_with_sign_percent(old: f64, new: f64) -> ColoredString {
 	// character if it's positive
 	let string = format!(
 		"{:+.2}%",
-		(diff / old * 100.).abs()
+		diff / old * 100.
 	);
 
 	if diff >= 0. {
@@ -154,14 +157,14 @@ pub fn sleep(s: u64) -> tokio::time::Sleep {
 	tokio::time::sleep(tokio::time::Duration::from_secs(s))
 }
 
-pub fn get_terminal_size() -> (u32, u32) {
+pub fn terminal_size() -> (u32, u32) {
 	// get the width and height of the terminal
 	let Size { cols: x, rows: y } = termsize::get().unwrap();
 
 	(x as u32 - 15, y as u32 - 2)
 }
 
-pub async fn get_stock_price(uri: &str, client: &Client) -> Option<f64> {
+pub async fn stock_price(uri: &str, client: &Client) -> Option<f64> {
 	// send the request to receive ticker price data
 	//
 	// note: these headers are required to avoid NASDAQ
@@ -213,9 +216,9 @@ pub async fn get_stock_price(uri: &str, client: &Client) -> Option<f64> {
 }
 
 // get the stock price history for a ticker
-pub async fn get_ticker_history(ticker: &str, client: &Client) -> Option<(f64, f64, f64)> {
+pub async fn ticker_history(ticker: &str, client: &Client) -> Option<(f64, f64, f64)> {
 	// get the current year
-	let year = get_current_year();
+	let year = current_year();
 
 	// construct the uri
 	let uri = constants::MARKETSTACK_API_ENDPOINT
@@ -260,7 +263,7 @@ pub async fn get_ticker_history(ticker: &str, client: &Client) -> Option<(f64, f
 	None
 }
 
-pub fn get_current_year() -> u64 {
+pub fn current_year() -> u64 {
 	let now: Duration = SystemTime::now()
 		.duration_since(SystemTime::UNIX_EPOCH)
 		.expect("We must be in Back to the Future 4, where they go to the past...");

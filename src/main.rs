@@ -1,3 +1,5 @@
+#![feature(int_log)]
+
 use reqwest::Client;
 use std::collections::VecDeque;
 
@@ -43,13 +45,13 @@ async fn main() -> () {
 	let mut last_price: f64 = 0.;
 	let mut total_price: f64 = 0.;
 
-	let history = match utils::get_ticker_history(&ticker, &client).await {
+	let history = match utils::ticker_history(&ticker, &client).await {
 		Some(h) => h,
 		None => return,
 	};
 
-	while let Some(price) = utils::get_stock_price(&uri, &client).await {
-		let (x, y) = utils::get_terminal_size();
+	while let Some(price) = utils::stock_price(&uri, &client).await {
+		let (x, y) = utils::terminal_size();
 
 		total_price += price;
 
@@ -93,11 +95,85 @@ async fn main() -> () {
 		// behaviour in C and C++
 		i += 1;
 
-		// wait 60 seconds (NASDAQ real-time API updates every minute)
+		// wait 5 seconds
 		utils::sleep(5).await;
 	}
 
 	// this is only reached when the loop is broken out of,
 	// which only happens when the stock price can not be fetched
 	println!("      invalid stock ticker");
+}
+
+#[cfg(test)]
+mod tests {
+	use colored::Colorize;
+	use super::*;
+
+	#[tokio::test]
+	async fn test_ticker_history() {
+		let client: Client = Client::builder()
+			.min_tls_version(reqwest::tls::Version::TLS_1_2)
+			.build()
+			.unwrap();
+
+		assert!(utils::ticker_history("AAPL", &client).await.is_some());
+	}
+
+	#[tokio::test]
+	async fn test_stock_price() {
+		let client: Client = Client::builder()
+			.min_tls_version(reqwest::tls::Version::TLS_1_2)
+			.build()
+			.unwrap();
+
+		let uri: String = constants::NASDAQ_API_ENDPOINT.replace("{ticker}", "AAPL");
+
+		assert!(utils::stock_price(&uri, &client).await.is_some());
+	}
+
+	#[test]
+	fn test_positive_diff_with_sign_percent() {
+		assert_eq!(utils::diff_with_sign_percent(5., 10.), "+100.00%".green());
+	}
+
+	#[test]
+	fn test_negative_diff_with_sign_percent() {
+		assert_eq!(utils::diff_with_sign_percent(10., 5.), "-50.00%".red());
+	}
+
+	#[test]
+	fn test_positive_diff_without_sign() {
+		assert_eq!(utils::diff_without_sign(5., 10.), "$5.00".green());
+	}
+
+	#[test]
+	fn test_negative_diff_without_sign() {
+		assert_eq!(utils::diff_without_sign(10., 5.), "-$5.00".red());
+	}
+
+	#[test]
+	fn test_positive_diff_with_sign() {
+		assert_eq!(utils::diff_with_sign(5., 10.), "+$5.00".green());
+	}
+
+	#[test]
+	fn test_negative_diff_with_sign() {
+		assert_eq!(utils::diff_with_sign(10., 5.), "-$5.00".red());
+	}
+
+	#[test]
+	fn test_round_and_whiten() {
+		assert_eq!(utils::round_and_whiten(10.365), "$10.37".white());
+	}
+
+	#[test]
+	fn test_current_year() {
+		// check if the year is four digits
+		// it's rounded down every time since it's an
+		// integer, so I need to check for 3
+		//
+		// log10(1000) = 3
+		// log10(9999) = 3.999
+		assert!(utils::current_year().log10() == 3);
+	}
 }
