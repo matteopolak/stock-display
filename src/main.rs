@@ -163,7 +163,7 @@ mod tests {
 
 	#[test]
 	fn test_negative_diff_without_sign() {
-		assert_eq!(utils::diff_without_sign(10., 5.), "-$5.00".red());
+		assert_eq!(utils::diff_without_sign(10., 5.), "$10.00".red());
 	}
 
 	#[test]
