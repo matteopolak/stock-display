@@ -74,7 +74,6 @@ pub fn pretty_print_data(
 	);
 
 	// print the plot to the console
-	/*
 	println!(
 		"{}",
 		Page::single(&view)
@@ -82,19 +81,18 @@ pub fn pretty_print_data(
 			.to_text()
 			.unwrap()
 	);
-	*/
 
 	// print out some metrics
 	println!(
-		"   {} | price: {} | last: {} | average: {} | change: {}",// | mtd: {} | qtd: {} | ytd: {}",
+		"   {} | price: {} | last: {} | average: {} | change: {} | mtd: {} | qtd: {} | ytd: {}",
 		ticker.cyan(),
 		round_and_whiten(current_price),
 		round_and_whiten(last_price),
-		diff_without_sign(current_price, average_price),
+		diff_without_sign(average_price, current_price),
 		diff_with_sign(last_price, current_price),
-		/*diff_with_sign_percent(mtd, current_price),
+		diff_with_sign_percent(mtd, current_price),
 		diff_with_sign_percent(qtd, current_price),
-		diff_with_sign_percent(ytd, current_price),*/
+		diff_with_sign_percent(ytd, current_price),
 	);
 }
 
@@ -121,15 +119,9 @@ pub fn diff_with_sign(old: f64, new: f64) -> ColoredString {
 // utility for printing the difference between two numbers
 pub fn diff_without_sign(old: f64, new: f64) -> ColoredString {
 	let diff = new - old;
-	let greater = diff >= 0.;
+	let string = format!("${:.2}", old);
 
-	let string = if greater {
-		format!("${:.2}", diff)
-	} else {
-		format!("-${:.2}", diff.abs())
-	};
-
-	if greater {
+	if diff >= 0. {
 		string.green()
 	} else {
 		string.red()
