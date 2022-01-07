@@ -74,6 +74,7 @@ pub fn pretty_print_data(
 	);
 
 	// print the plot to the console
+	/*
 	println!(
 		"{}",
 		Page::single(&view)
@@ -81,18 +82,19 @@ pub fn pretty_print_data(
 			.to_text()
 			.unwrap()
 	);
+	*/
 
 	// print out some metrics
 	println!(
-		"   {} | price: {} | last: {} | average: {} | change: {} | mtd: {} | qtd: {} | ytd: {}",
+		"   {} | price: {} | last: {} | average: {} | change: {}",// | mtd: {} | qtd: {} | ytd: {}",
 		ticker.cyan(),
 		round_and_whiten(current_price),
 		round_and_whiten(last_price),
 		diff_without_sign(current_price, average_price),
 		diff_with_sign(last_price, current_price),
-		diff_with_sign_percent(mtd, current_price),
+		/*diff_with_sign_percent(mtd, current_price),
 		diff_with_sign_percent(qtd, current_price),
-		diff_with_sign_percent(ytd, current_price),
+		diff_with_sign_percent(ytd, current_price),*/
 	);
 }
 
