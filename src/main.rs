@@ -11,21 +11,35 @@ mod utils;
 async fn main() -> () {
 	let terminal = console::Term::stdout();
 
-	// get the stock ticker from the user
-	// of 5 bytes, which is the maximum length of a ticker
-	let ticker: String = utils::get_input_string("      stock ticker: ", 5).to_uppercase();
+	// create a new http client from which to dispatch requests
+	let client: Client = Client::builder()
+		.min_tls_version(reqwest::tls::Version::TLS_1_2)
+		.build()
+		.unwrap();
+
+	// note: this loop will continue looping until it is broken
+	// out of (with a value here, which is what the variable
+	// is going to be assigned to)
+	let ticker: String = loop {
+		// get the stock ticker from the user
+		// of 5 bytes, which is the maximum length of a ticker
+		let ticker = utils::get_input_string("      stock ticker: ", 5).to_uppercase();
+
+		// if the ticker is valid...
+		if utils::is_valid_ticker(&ticker, &client).await {
+			// break out of the loop with the ticker
+			break ticker;
+		}
+
+		// if not, say it's invalid and start again
+		println!("      invalid ticker, please try again");
+	};
 
 	// clear the terminal
 	terminal.clear_screen().unwrap();
 
 	// hide the cursor
 	terminal.hide_cursor().unwrap();
-
-	// create a new http client from which to dispatch requests
-	let client: Client = Client::builder()
-		.min_tls_version(reqwest::tls::Version::TLS_1_2)
-		.build()
-		.unwrap();
 
 	// build the URI from the ticker name
 	let uri: String = constants::NASDAQ_API_ENDPOINT.replace("{ticker}", &ticker);
@@ -101,13 +115,13 @@ async fn main() -> () {
 
 	// this is only reached when the loop is broken out of,
 	// which only happens when the stock price can not be fetched
-	println!("      invalid stock ticker");
+	println!("      error fetching ticker data");
 }
 
 #[cfg(test)]
 mod tests {
-	use colored::Colorize;
 	use super::*;
+	use colored::Colorize;
 
 	#[tokio::test]
 	async fn test_ticker_history() {
@@ -174,6 +188,6 @@ mod tests {
 		//
 		// log10(1000) = 3
 		// log10(9999) = 3.999
-		assert!(utils::current_year().log10() == 3);
+		assert_eq!(utils::current_year().log10(), 3);
 	}
 }

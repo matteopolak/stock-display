@@ -1,3 +1,4 @@
+use colored::{ColoredString, Colorize};
 use plotlib::page::Page;
 use plotlib::repr::Plot;
 use plotlib::style::{PointMarker, PointStyle};
@@ -8,7 +9,6 @@ use std::io::{self, Write};
 use std::str;
 use std::time::{Duration, SystemTime};
 use termsize::{self, Size};
-use colored::{Colorize, ColoredString};
 
 use crate::constants;
 use crate::structs;
@@ -126,7 +126,7 @@ pub fn diff_without_sign(old: f64, new: f64) -> ColoredString {
 	} else {
 		format!("-${:.2}", diff.abs())
 	};
-	
+
 	if greater {
 		string.green()
 	} else {
@@ -140,10 +140,7 @@ pub fn diff_with_sign_percent(old: f64, new: f64) -> ColoredString {
 
 	// `:+.2` = round to 2 decimals, and include the `+`
 	// character if it's positive
-	let string = format!(
-		"{:+.2}%",
-		diff / old * 100.
-	);
+	let string = format!("{:+.2}%", diff / old * 100.);
 
 	if diff >= 0. {
 		string.green()
@@ -213,6 +210,37 @@ pub async fn stock_price(uri: &str, client: &Client) -> Option<f64> {
 
 	// return nothing
 	None
+}
+
+pub async fn is_valid_ticker(ticker: &str, client: &Client) -> bool {
+	// build a new uri with the ticker
+	let uri: String = constants::NASDAQ_API_ENDPOINT.replace("{ticker}", ticker);
+
+	// construct and send an http request to the NASDAQ API
+	let request: Result<Response, Error> = client
+		.get(uri)
+		.header(header::ACCEPT_LANGUAGE, "en-US;q=0.9")
+		.header(header::ACCEPT_ENCODING, "text")
+		.header(header::USER_AGENT, constants::USER_AGENT_HEADER)
+		.send()
+		.await;
+
+	// if the response is ok...
+	if let Ok(response) = request {
+		// parse the response body
+		let status = match response.json::<structs::NasdaqStatusWrap>().await {
+			// if it parses successfully, return the response code
+			Ok(j) => j.status.rCode,
+			Err(_) => return false,
+		};
+
+		// it's successful if the code is 200 (200 = OK)
+		return status == 200;
+	}
+
+	// if the response was not ok, it will skip
+	// the `if let` statement and just return false
+	false
 }
 
 // get the stock price history for a ticker

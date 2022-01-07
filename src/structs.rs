@@ -14,6 +14,18 @@ pub struct NasdaqData {
 
 #[allow(non_snake_case)]
 #[derive(Deserialize)]
+pub struct NasdaqStatusWrap {
+	pub status: NasdaqStatus,
+}
+
+#[allow(non_snake_case)]
+#[derive(Deserialize)]
+pub struct NasdaqStatus {
+	pub rCode: u16,
+}
+
+#[allow(non_snake_case)]
+#[derive(Deserialize)]
 pub struct NasdaqPrimaryData {
 	pub lastSalePrice: String,
 }
