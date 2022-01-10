@@ -158,7 +158,7 @@ pub fn terminal_size() -> (u32, u32) {
 pub async fn stock_price(uri: &str, client: &Client) -> Option<f64> {
 	// send the request to receive ticker price data
 	//
-	// note: these headers are required to avoid NASDAQ
+	// note: these headers are required to avoid Nasdaq
 	// rejecting our request
 	let request: Result<Response, Error> = client
 		.get(uri)
@@ -215,7 +215,7 @@ pub async fn is_valid_ticker(ticker: &str, client: &Client) -> bool {
 	// build a new uri with the ticker
 	let uri: String = constants::NASDAQ_API_ENDPOINT.replace("{ticker}", ticker);
 
-	// construct and send an http request to the NASDAQ API
+	// construct and send an http request to the Nasdaq API
 	let request: Result<Response, Error> = client
 		.get(uri)
 		.header(header::ACCEPT_LANGUAGE, "en-US;q=0.9")
