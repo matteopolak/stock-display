@@ -84,7 +84,7 @@ pub fn pretty_print_data(
 
 	// print out some metrics
 	println!(
-		"   {} | price: {} | last: {} | average: {} | change: {} | mtd: {} | qtd: {} | ytd: {}",
+		"   {} | Price: {} | Last: {} | Average: {} | Change: {} | MTD: {} | QTD: {} | YTD: {}",
 		ticker.cyan(),
 		round_and_whiten(current_price),
 		round_and_whiten(last_price),
@@ -98,7 +98,7 @@ pub fn pretty_print_data(
 
 // round to two decimal places and make the text white
 pub fn round_and_whiten(num: f64) -> ColoredString {
-	format!("${}", ((num * 100.).round() / 100.)).white()
+	format!("${:.2}", num).white()
 }
 
 // utility for printing the difference between two numbers,
@@ -207,6 +207,11 @@ pub async fn stock_price(uri: &str, client: &Client) -> Option<f64> {
 }
 
 pub async fn is_valid_ticker(ticker: &str, client: &Client) -> bool {
+	// check if the ticker length is between 1 and 5
+	if !(1..5).contains(&ticker.len()) {
+		return false;
+	}
+
 	// build a new uri with the ticker
 	let uri: String = constants::NASDAQ_API_ENDPOINT.replace("{ticker}", ticker);
 

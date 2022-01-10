@@ -146,6 +146,26 @@ mod tests {
 		assert!(utils::stock_price(&uri, &client).await.is_some());
 	}
 
+	#[tokio::test]
+	async fn test_valid_is_valid_ticker() {
+		let client: Client = Client::builder()
+			.min_tls_version(reqwest::tls::Version::TLS_1_2)
+			.build()
+			.unwrap();
+
+		assert_eq!(utils::is_valid_ticker("AAPL", &client).await, true);
+	}
+
+	#[tokio::test]
+	async fn test_invalid_is_valid_ticker() {
+		let client: Client = Client::builder()
+			.min_tls_version(reqwest::tls::Version::TLS_1_2)
+			.build()
+			.unwrap();
+
+		assert_eq!(utils::is_valid_ticker("AAPLAAPL", &client).await, false);
+	}
+
 	#[test]
 	fn test_positive_diff_with_sign_percent() {
 		assert_eq!(utils::diff_with_sign_percent(5., 10.), "+100.00%".green());
