@@ -24,7 +24,9 @@ async fn main() -> () {
 	let ticker: String = loop {
 		// get the stock ticker from the user
 		// of 5 bytes, which is the maximum length of a ticker
-		let input_ticker: String = utils::get_input_string(&format!("      {} Stock ticker: ", "…".yellow()), 5).to_uppercase();
+		let input_ticker: String =
+			utils::get_input_string(&format!("      {} Stock ticker: ", "…".yellow()), 5)
+				.to_uppercase();
 
 		// if the ticker is valid...
 		if utils::is_valid_ticker(&input_ticker, &client).await {
@@ -33,7 +35,11 @@ async fn main() -> () {
 		}
 
 		// if not, say it's invalid and start again
-		println!("      {} The ticker {} is invalid, please try again", "X".red(), &input_ticker.white());
+		println!(
+			"      {} The ticker {} is invalid, please try again",
+			"X".red(),
+			&input_ticker.white()
+		);
 	};
 
 	// clear the terminal
