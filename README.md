@@ -4,7 +4,7 @@
 [![License:MIT](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Rust:Nightly](https://img.shields.io/badge/rust-nightly-blue.svg)](https://www.rust-lang.org/tools/install)
 
-[stock-display](https://github.com/matteopolak/stock-display) is a lightweight stock metrics provider built on Rust. It provides
+[stock-display](https://github.com/matteopolak/stock-display) is a lightweight stock metrics provider built with Rust. It provides
 historical data comparisons, price changes, and a plot of real-time stock prices.
 
 ## Install
