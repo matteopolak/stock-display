@@ -293,7 +293,7 @@ pub async fn ticker_history(ticker: &str, client: &Client) -> Option<(f64, f64, 
 pub fn current_year() -> u64 {
 	let now: Duration = SystemTime::now()
 		.duration_since(SystemTime::UNIX_EPOCH)
-		.expect("We must be in Back to the Future 4, where they go to the past...");
+		.expect("We must be in the past...");
 
 	// divide the number of seconds since January 1, 1970
 	// by the number of seconds in a year to get the number
