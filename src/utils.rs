@@ -152,7 +152,7 @@ pub fn terminal_size() -> (u32, u32) {
 	// get the width and height of the terminal
 	let Size { cols: x, rows: y } = termsize::get().unwrap();
 
-	(x as u32 - 15, y as u32 - 2)
+	(x as u32 - 15, y as u32 - 6)
 }
 
 pub async fn stock_price(uri: &str, client: &Client) -> Option<f64> {
